@@ -199,16 +199,11 @@
             }
         };
 
-        let ultimoDiaRespondido = parseInt(localStorage.getItem('ultimoDiaFinalV3')) || 0;
-        let marcaTiempoUltimoAcierto = parseInt(localStorage.getItem('marcaTiempoFinalV3')) || 0;
+        let ultimoDiaRespondido = parseInt(localStorage.getItem('ultimoDiaLibre')) || 0;
         let diaActual = ultimoDiaRespondido + 1;
         if(diaActual > 5) diaActual = 5;
 
         function cargarPagina() {
-            const ahora = Date.now();
-            // Bloqueo estricto de 23 horas reales
-            const tiempoEspera = 23 * 60 * 60 * 1000; 
-
             // Pintar progreso de huellas
             for (let i = 1; i <= 5; i++) {
                 const h = document.getElementById(`huella-${i}`);
@@ -221,7 +216,7 @@
                 }
             }
 
-            // Fondo dinámico
+            // Cambiar color de fondo
             if (ultimoDiaRespondido >= 1) {
                 document.getElementById('cuerpo').classList.remove('bg-pastel-gray');
                 document.getElementById('cuerpo').classList.add('bg-rosa-pastel');
@@ -230,7 +225,7 @@
                 document.getElementById('cuerpo').classList.add('bg-pastel-gray');
             }
 
-            // Texto de la carta acumulada
+            // Actualizar lienzo de la carta
             const lienzo = document.getElementById('texto-carta');
             if (ultimoDiaRespondido > 0) {
                 lienzo.innerHTML = datosDias[ultimoDiaRespondido].cartaHastaAqui;
@@ -242,7 +237,7 @@
                 lienzo.classList.remove('text-gray-800');
             }
 
-            // Pistas visuales
+            // Mostrar iconos de pistas acumuladas
             if (ultimoDiaRespondido >= 2) document.getElementById('perrito-pensando').classList.remove('opacity-0');
             else document.getElementById('perrito-pensando').classList.add('opacity-0');
             
@@ -252,23 +247,11 @@
             if (ultimoDiaRespondido >= 4) document.getElementById('casita-silueta').classList.remove('opacity-0');
             else document.getElementById('casita-silueta').classList.add('opacity-0');
 
-            // CONTROL DE BLOQUEO: Solo si ya respondió hoy un día que estaba bloqueado
-            if (ultimoDiaRespondido > 0 && ultimoDiaRespondido < 5 && (ahora - marcaTiempoUltimoAcierto < tiempoEspera)) {
-                document.getElementById('contador-dias').innerText = `Día ${ultimoDiaRespondido} completado`;
-                document.getElementById('texto-acertijo').innerText = "¡Ya resolviste el misterio de hoy, pastelito! 🌸\n\nTu progreso se ha guardado a salvo. Descansa y vuelve mañana para descubrir la siguiente pista. 🐾";
-                document.getElementById('controles-juego').classList.add('hidden');
-                
-                const msg = document.getElementById('mensaje-felicitacion');
-                msg.innerText = datosDias[ultimoDiaRespondido].felicitacion;
-                msg.classList.remove('opacity-0');
-                return;
-            }
-
-            // Si ya terminó todo el juego
+            // SI YA GANÓ TODO
             if (ultimoDiaRespondido === 5) {
                 document.getElementById('contador-dias').innerText = `¡Aventura completada! ❤️`;
-                document.getElementById('texto-acertijo').innerText = "Has descifrado todo el mensaje.";
                 document.getElementById('zona-acertijo').innerHTML = `
+                    <p class="text-gray-700 text-sm font-semibold text-center mb-2">Has descifrado todo el mensaje.</p>
                     <button onclick="alert('¡Siii! Cita confirmada. Nos vemos el sábado mi amor! 🐾❤️')" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-4 rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95 text-lg">
                         ¡Sí, acepto! 🐾
                     </button>
@@ -276,7 +259,7 @@
                 return;
             }
 
-            // Habilitar siguiente día disponible
+            // CARGAR DÍA JUGABLE ACTUAL
             diaActual = ultimoDiaRespondido + 1;
             document.getElementById('contador-dias').innerText = `Día ${diaActual} de 5`;
             document.getElementById('texto-acertijo').innerText = datosDias[diaActual].acertijo;
@@ -293,10 +276,8 @@
                 playSound('acierto');
                 lluviaDeCorazones();
 
-                localStorage.setItem('ultimoDiaFinalV3', diaActual);
-                localStorage.setItem('marcaTiempoFinalV3', Date.now());
+                localStorage.setItem('ultimoDiaLibre', diaActual);
                 ultimoDiaRespondido = diaActual;
-                marcaTiempoUltimoAcierto = Date.now();
 
                 const lienzo = document.getElementById('texto-carta');
                 lienzo.innerHTML = diaConfig.cartaHastaAqui;
@@ -352,7 +333,6 @@
         function reiniciarJuegoSecreto() {
             localStorage.clear();
             ultimoDiaRespondido = 0;
-            marcaTiempoUltimoAcierto = 0;
             diaActual = 1;
             location.reload();
         }
